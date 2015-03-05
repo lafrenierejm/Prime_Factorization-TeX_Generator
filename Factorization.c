@@ -83,6 +83,22 @@ void outputFactorization(struct node *head, unsigned long key, FILE *outputFile)
 	}while(didFactor && key > 1);	
 }
 
+// Clean up linked list
+void freeMemory(struct node *head) {
+	struct node *ptr;
+
+	ptr = head->next; // Free memory from head up to tail
+	while(ptr->value != 0) {
+		free(head);	// Free head
+		head = ptr;	// Advance head
+		ptr = ptr->next;// Advance ptr through linked list
+	}
+	head = ptr;	// Head is tail
+	free(head);	// Free final node
+
+	return;	// Return void
+}
+
 main() {
 	// Variables
 	unsigned long key;	// Value to factorize
