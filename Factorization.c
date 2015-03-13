@@ -101,30 +101,36 @@ void makeListOfPrimes(struct node *head, unsigned long max) {
 
 // Output prime factorizaiton
 void outputFactorization(struct node *head, unsigned long key, FILE *outputFile) {
-	int exponent;
-	bool didFactor;	// Set to true if a prime factor was found
-	struct node *currentNode;
+	int exponent;			// Contains exponent of each factor
+	bool firstFactor = true;	// Set to false after first factor is found
+	struct node *currentNode;	// Node pointer
 
-	fprintf(outputFile, "1^{1}");
-	currentNode = head;
-	do {
-		// Reset variables
-		didFactor = false;
-		exponent = 1;
+	currentNode = head;	// Point to beginning of list
 
-		// Loop while still looking for factor and still in list
-		while(!didFactor && currentNode->value != 0) {
-			// See if value in currentNode divides key
-			if(key % currentNode->value == 0) {
-				fprintf(outputFile, "*%lu", currentNode->value);	// Output new factor
-				while(key % currentNode->value == 0) {
-					exponent++;			// Increment exponent of factor
-					key /= currentNode->value;	// Divide key by currentNode
-				}
-				fprintf(outputFile, "^{%i}", exponent - 1);	// Output power of factor
-				didFactor = true;			// Proceed to next factorization loop
-			}	
-			currentNode = currentNode->next;		// Advance to next node in list
-		}
-	}while(didFactor && key > 1);	
+	// If 1, output 1 as factor
+	if(key == 1)
+		fprintf(outputFile, "1");
+
+	// Loop while still looking for factors and still in list
+	while(key != 0 && currentNode->value != 0) {
+		exponent = 1;	// Reset exponent
+
+		// See if value in currentNode divides key
+		if(key % currentNode->value == 0) {
+			// If not first factor, print multiplication sign
+			if(!firstFactor)
+				fprintf(outputFile, "*");
+
+			fprintf(outputFile, "%lu", currentNode->value);	// Output new factor
+
+			while(key % currentNode->value == 0) {
+				exponent++;			// Increment exponent of factor
+				key /= currentNode->value;	// Divide key by currentNode
+			}
+
+			fprintf(outputFile, "^{%i}", exponent - 1);	// Output power of factor
+			firstFactor = false;			// At least one factor has been found
+		}	
+		currentNode = currentNode->next;		// Advance to next node in list
+	}	
 }
