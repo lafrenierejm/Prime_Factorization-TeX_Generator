@@ -8,6 +8,36 @@ struct node {
 	struct node *next;
 };
 
+// Function prototypes
+struct node* makeNode(unsigned long num);	// Create new node
+void makeListOfPrimes(struct node *head, unsigned long max); // Construct linked list of prime numbers which are possible factors of max
+void outputFactorization(struct node *head, unsigned long key, FILE *outputFile);	// Write factorization to file
+
+// Main method
+main() {
+	// Variables
+	unsigned long key;	// Value to factorize
+	struct node *head;	// Points to first node in list
+	FILE *outputFile = fopen("Output.tex", "w");
+
+	// Get user input for value of key
+	printf("Enter a positive integer: ");
+	scanf("%lu", &key);
+
+	// Write prefix to file
+	fprintf(outputFile, "\\( = ");
+	
+	head = makeNode(2);		// Allocate memory for head node
+	head->next = makeNode(0);	// Allocate memory for end node
+	makeListOfPrimes(head, key);	// Create list of primes which are possible factors of key
+	outputFactorization(head, key, outputFile);
+	
+	// Write suffix to file
+	fprintf(outputFile, " \\)");
+
+	return(EXIT_SUCCESS);	// Exit successfully
+}
+
 // Create new node
 struct node* makeNode(unsigned long num) {
 	struct node *newNode;
@@ -20,6 +50,22 @@ struct node* makeNode(unsigned long num) {
 
 	newNode->value = num;
 	newNode->next = NULL;
+}
+
+// Clean up linked list
+void freeMemory(struct node *head) {
+	struct node *ptr;
+
+	ptr = head->next; // Free memory from head up to tail
+	while(ptr->value != 0) {
+		free(head);	// Free head
+		head = ptr;	// Advance head
+		ptr = ptr->next;// Advance ptr through linked list
+	}
+	head = ptr;	// Head is tail
+	free(head);	// Free final node
+
+	return;	// Return void
 }
 
 // Construct linked list all prime numbers which are possible factors of max
@@ -81,44 +127,4 @@ void outputFactorization(struct node *head, unsigned long key, FILE *outputFile)
 			currentNode = currentNode->next;		// Advance to next node in list
 		}
 	}while(didFactor && key > 1);	
-}
-
-// Clean up linked list
-void freeMemory(struct node *head) {
-	struct node *ptr;
-
-	ptr = head->next; // Free memory from head up to tail
-	while(ptr->value != 0) {
-		free(head);	// Free head
-		head = ptr;	// Advance head
-		ptr = ptr->next;// Advance ptr through linked list
-	}
-	head = ptr;	// Head is tail
-	free(head);	// Free final node
-
-	return;	// Return void
-}
-
-main() {
-	// Variables
-	unsigned long key;	// Value to factorize
-	struct node *head;	// Points to first node in list
-	FILE *outputFile = fopen("Output.tex", "w");
-
-	// Get user input for value of key
-	printf("Enter a positive integer: ");
-	scanf("%lu", &key);
-
-	// Write prefix to file
-	fprintf(outputFile, "\\( = ");
-	
-	head = makeNode(2);		// Allocate memory for head node
-	head->next = makeNode(0);	// Allocate memory for end node
-	makeListOfPrimes(head, key);	// Create list of primes which are possible factors of key
-	outputFactorization(head, key, outputFile);
-	
-	// Write suffix to file
-	fprintf(outputFile, " \\)");
-
-	return(EXIT_SUCCESS);	// Exit successfully
 }
