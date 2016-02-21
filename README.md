@@ -1,7 +1,6 @@
 # Prime_Factorization-TeX_Generator
-Prompts for an integer and outputs the prime factorization of that number as a single line of math-formatted TeX.
+Writes the prime factorization of a specified integer as a single line of math-formatted TeX.
 
-The input is stored as unsigned long in C.
-The algorithm finds and stores all prime numbers up to input/2 in a linked list. The linked list is implemented as a series of struct pointers.
-After generating the list of primes, those primes are sequentially compared to the input number to break it down in powers of primes.
-Each factor is written to Output.tex, which will be created in the directory of the executable.
+
+As a linked list of prime numbers is generated, each factor is checked against the given key to find valid factors.
+The results are written to a specified file as TeX markup.
