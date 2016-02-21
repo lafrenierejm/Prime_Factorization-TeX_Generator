@@ -35,11 +35,7 @@ main()
 	scanf("%lu", &key);
 
 	primeT *head = makeNode(2);	// Start list of primes at 2
-	printf("Successfully created head; head value = %lu; key value = %lu\n",
-			head->value,
-			key);
 	factorKey(head, key, outputFile);	// Factor the key
-	printf("Successfully factored key\n");
 	freeList(head);			// Free the linked list
 
 	/* Close the file */
@@ -122,19 +118,15 @@ factorKey(primeT *head,
 	{
 		exponent++;	// Increment exponent with each factor
 		key = key/2;	// Divide key by curNode->value
-		printf("Exponent = %u\n", exponent);
-		printf("key = %lu\n", key);
 	}
 	/* If there were any factors, write them to outputFile */
 	if (exponent > 0)
 	{
-		printf("Powers of 2 about to be written.\n");
 		fprintf(outputFile, " 2^{%u}",
 				exponent
 		       );
 		/* There is now at least one factor */
 		isFirstFactor = false;
-		printf("Powers of 2 written.\n");
 	}
 
 	/* Continue factoring while key contains prime factors */
@@ -156,7 +148,7 @@ factorKey(primeT *head,
 			if (!isFirstFactor)
 				fprintf(outputFile, " \\cdot{}");
 			/* Write factor */
-			fprintf(outputFile, " %lu%{%u}",
+			fprintf(outputFile, " %lu^{%u}",
 					curNode->value,
 					exponent
 			       );
