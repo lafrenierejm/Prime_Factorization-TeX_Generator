@@ -24,19 +24,36 @@ primeT * findNextPrime(primeT *, primeT *, unsigned long);
  * Main method
  */
 int
-main()
+main(int argc, char *argv[])
 {
-	/* Variables */
-	unsigned long key;	// Value to factorize
-	FILE *outputFile = fopen("Output.tex", "w");
+	/* User should have provided key and filename arguments */
+	if (argc != 3)
+	{
+		printf("Usage: %s key filename\n",
+				argv[0]
+		      );
+		exit(1);	// Exit with code 1
+	}
 
-	/* Get user input for value of key */
-	printf("Enter a positive integer: ");
-	scanf("%lu", &key);
+	/* Open file */
+	FILE *outputFile = fopen(argv[2], "w");
+	if (NULL == outputFile)
+	{
+		perror("An error occured while opening the file\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Set key value */
+	unsigned long key = strtoul(argv[1], NULL, 10);
+	if (key == 1)
+	{
+		printf("1 is not a prime number\n");
+		exit(EXIT_SUCCESS);
+	}
 
 	primeT *head = makeNode(2);	// Start list of primes at 2
 	factorKey(head, key, outputFile);	// Factor the key
-	freeList(head);			// Free the linked list
+	freeList(head);	// Free the linked list
 
 	/* Close the file */
 	fclose(outputFile);
