@@ -42,8 +42,11 @@ main()
 	printf("Successfully factored key\n");
 	freeList(head);			// Free the linked list
 
+	/* Close the file */
+	fclose(outputFile);
+
 	/* Exit successfully */
-	return(EXIT_SUCCESS);
+	exit(EXIT_SUCCESS);
 }
 
 /*
@@ -125,12 +128,13 @@ factorKey(primeT *head,
 	/* If there were any factors, write them to outputFile */
 	if (exponent > 0)
 	{
+		printf("Powers of 2 about to be written.\n");
 		fprintf(outputFile, " 2^{%u}",
 				exponent
 		       );
 		/* There is now at least one factor */
 		isFirstFactor = false;
-		printf("Powers of 2 written.");
+		printf("Powers of 2 written.\n");
 	}
 
 	/* Continue factoring while key is positive */
