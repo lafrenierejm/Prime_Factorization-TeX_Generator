@@ -1,47 +1,44 @@
-#include <stdio.h>		// I/O
+#include <stdio.h>	// I/O
 #include <stdlib.h>
-#include <stdbool.h>	// For boolean data type
+#include <stdbool.h>	// bool data type
 
-/* Define node for linked list */
-struct node
+/* Define prime for linked list */
+typedef struct prime
 {
-	unsigned long value;	// Holds data of this element
-	struct node *next;
-};
+	unsigned long value;	// Holds prime's data
+	struct prime *next;
+} primeT;
 
 /* Function prototypes */
-// Create new node
-struct node* makeNode(unsigned long);
-// Construct a linked list of possible prime factors
-void makeListOfPrimes(struct node *, unsigned long);
-// Write factorization to file
-void outputFactorization(struct node *, unsigned long, FILE *);
+// Create new prime
+primeT * makeNode(unsigned long);
+// Free list
+void freeMemory(primeT *);
+// Factor the key
+void factorKey(unsigned long, FILE *);
+// Find the next prime number
+unsigned long findNextPrime(primeT *, unsigned long);
 
 /*
  * main
  * Main method
  */
 int
-main() {
+main()
+{
 	/* Variables */
 	unsigned long key;	// Value to factorize
-	struct node *head;	// Points to first node in list
+	primeT *head;		// Points to first prime in list
 	FILE *outputFile = fopen("Output.tex", "w");
 
 	/* Get user input for value of key */
 	printf("Enter a positive integer: ");
 	scanf("%lu", &key);
 
-	/* Write prefix to file */
-	fprintf(outputFile, "\\( = ");
-
-	head = makeNode(2);		// Allocate memory for head node
-	head->next = makeNode(0);	// Allocate memory for end node
+	head = makeNode(2);		// Allocate memory for head prime
+	head->next = makeNode(0);	// Allocate memory for end prime
 	makeListOfPrimes(head, key);	// Create list of primes which are possible factors of key
 	outputFactorization(head, key, outputFile);
-
-	/* Write suffix to file */
-	fprintf(outputFile, " \\)");
 
 	return(EXIT_SUCCESS);	// Exit successfully
 }
@@ -50,21 +47,25 @@ main() {
  * makeNode
  * Create new node
  */
-struct node*
+primeT *
 makeNode(unsigned long num)
 {
-	struct node *newNode;
-	newNode = (struct node*)malloc(sizeof(struct node));
+	/* malloc a new primeT instance */
+	primeT *newNode = (primeT*)malloc(sizeof(primeT));
 
-	/* Test for insufficient memory */
+	/* Test for successful allocation of newPrime */
 	if (newNode == NULL)
 	{
-		printf("Node creation failed\n.");
+		printf("primeT creation failed\n.");
 		return NULL;
 	}
 
-	newNode->value = num;
-	newNode->next = NULL;
+	/* Assign initial values to node */
+	newNode->value = num;	// Passed value
+	newNode->next = NULL;	// Point to NULL
+
+	/* Return the new primeT */
+	return newNode;
 }
 
 /*
@@ -72,105 +73,123 @@ makeNode(unsigned long num)
  * Clean up linked list
  */
 void
-freeMemory(struct node *head)
+freeMemory(primeT *head)
 {
-	struct node *ptr;
+	/* Create primeT pointer at second prime */
+	primeT *ptr = head->next;
 
-	ptr = head->next; // Free memory from head up to tail
+	/* Free memory from head to tail */
 	while (ptr->value != 0)
 	{
-		free(head);	// Free head
-		head = ptr;	// Advance head
-		ptr = ptr->next;// Advance ptr through linked list
+		free(head);		// Free head
+		head = ptr;		// Advance head
+		ptr = ptr->next;	// Advance ptr through linked list
 	}
-	head = ptr;	// Head is tail
+	head = ptr;	// Head is now the tail
 	free(head);	// Free final node
 
-	return;	// Return void
+	/* Return void */
+	return;
 }
 
 /*
- * makeListOfPrimes
- * Construct linked list all prime numbers which are possible factors of max
+ * factorKey
+ * Find the prime factorization of the given key value
+ * Write factors to the output file as they are found
  */
 void
-makeListOfPrimes(struct node *head,
-		unsigned long max)
+factorKey(unsigned long key,
+		FILE *outputFile)
 {
-	struct node *currentPosition;	// Will point to end of list
-	struct node *loopPosition;	// Used to cycle through list
-	unsigned long tmp;
-	bool isPrime;
+	primeT *curNode = makeNode(2);	// Smallest prime number is 2
+	primeT *head = curNode;		// Set head to curNode
+	unsigned int exponent = 0;
+	bool isFirstFactor = true;	// If true then write \cdot{} to file
 
-	currentPosition = head;
-	// Set currentPosition to end of list
-	while (currentPosition->value != 0)
-		currentPosition = currentPosition->next;
-
-	tmp = 3;	// Begin testing numbers at 3
-	while (tmp < max/2)
+	/* Divide by 2 */
+	while ((key % 2 == 0) && (key > 0))
 	{
-		loopPosition = head;	// Reset loopPosition to beginning of list
+		exponent++;	// Increment exponent with each factor
+		key = key/2;	// Divide key by curNode->value
+	}
+	/* If there were any factors, write them to outputFile */
+	if (exponent > 0)
+	{
+		fprintf(outputFile, " 2^{%u}",
+				exponent
+		       );
+		/* Have at least one factor */
+		isFirstFactor = false;
+	}
+
+	/* Continue factoring while key is positive */
+	while (key != 0)
+	{
+		exponent = 0;	// Reset exponent
+		curNode = nextPrime(head, curNode, key);	// Find next prime
+
+		/* Divide by the found prime */
+		while ((key % curNode->value == 0) && (key > 0))
+		{
+			exponent++;	// Increment exponent with each factor
+			key = key/curNode->value;	// Divide key by current prime
+		}
+		/* If there were any factors, write them to outputFile */
+		if (exponent > 0)
+		{
+			/* Write \cdot{} if not first factor */
+			if (!isFirstFactor)
+				fprintf(outputFile, " \\cdot{}");
+			/* Write factor */
+			fprintf(outputFile, " %lu%{%u}",
+					curNode->value,
+					exponent
+			       );
+			/* Have at least one factor */
+			isFirstFactor = false;
+		}
+	}
+
+	/* Return void */
+	return;
+}
+
+/*
+ * nextPrime
+ * Find the next prime number givena a list of primes starting at 2
+ */
+nodeT *
+nextPrime(nodeT *head,
+		nodeT *tail,
+		unsigned long key)
+{
+	curPrime = tail->value;	// Current prime is at end of list
+	unsigned long tmp;
+
+	/* Find first test value for curPrime */
+	if (curPrime == 2)
+		tmp = 3;
+	else
+		tmp = curPrime + 2;
+
+	/* Test tmp for primeness while tmp <= key */
+	while (tmp <= key)
+	{
+		nodeT *position = head;	// Set position to beginning of list
 		isPrime = true;		// Assume that tmp is prime
 		while (isPrime && loopPosition->value != 0)
 		{
 			if (tmp % loopPosition->value == 0)
 				isPrime = false;	// tmp is not prime
 			else
-				loopPosition = loopPosition->next;	// Go to next node
+				loopPosition = loopPosition->next;	// Go to next prime
 		}
 		if (isPrime)
 		{
-			currentPosition->value = tmp;		// Set last node to this prime
-			currentPosition->next = makeNode(0);	// Add new end node
-			currentPosition = currentPosition->next;	// Move to that node
+			currentPosition->value = tmp;		// Set last prime to this prime
+			currentPosition->next = makeNode(0);	// Add new end prime
+			currentPosition = currentPosition->next;	// Move to that prime
 		}
 		tmp += 2;	// Increment tmp by 2
-	}
-}
-
-/*
- * outputFactorization
- * Output prime factorization
- */
-void
-outputFactorization(struct node *head,
-		unsigned long key,
-		FILE *outputFile)
-{
-	int exponent;			// Contains exponent of each factor
-	bool firstFactor = true;	// Set to false after first factor is found
-	struct node *currentNode;	// Node pointer
-
-	currentNode = head;	// Point to beginning of list
-
-	// If 1, output 1 as factor
-	if (key == 1)
-		fprintf(outputFile, "1");
-
-	// Loop while still looking for factors and still in list
-	while (key != 0 && currentNode->value != 0)
-	{
-		exponent = 1;	// Reset exponent
-
-		// See if value in currentNode divides key
-		if (key % currentNode->value == 0)
-		{
-			// If not first factor, print multiplication sign
-			if (!firstFactor)
-				fprintf(outputFile, "*");
-
-			fprintf(outputFile, "%lu", currentNode->value);	// Output new factor
-
-			while (key % currentNode->value == 0)
-			{
-				exponent++;			// Increment exponent of factor
-				key /= currentNode->value;	// Divide key by currentNode
-			}
-
-			fprintf(outputFile, "^{%i}", exponent - 1);	// Output power of factor
-			firstFactor = false;			// At least one factor has been found
-		}
-		currentNode = currentNode->next;		// Advance to next node in list
 	}
 }
