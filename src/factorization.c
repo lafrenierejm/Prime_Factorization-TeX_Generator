@@ -137,8 +137,8 @@ factorKey(primeT *head,
 		printf("Powers of 2 written.\n");
 	}
 
-	/* Continue factoring while key is positive */
-	while (key != 0)
+	/* Continue factoring while key contains prime factors */
+	while (key > 1)
 	{
 		exponent = 0;	// Reset exponent
 		curNode = findNextPrime(head, curNode, key);	// Find next prime
