@@ -129,7 +129,7 @@ factorKey(primeT *head,
 {
 	primeT *curNode = head;		// Set curNode to head
 	unsigned int exponent = 0;
-	bool isFirstFactor = true;	// If true then write \cdot{} to file
+	bool isFirstFactor = true;	// If true then write \times{} to file
 
 	/* Divide by 2 */
 	while ((key % 2 == 0) && (key > 0))
@@ -162,9 +162,9 @@ factorKey(primeT *head,
 		/* If there were any factors, write them to outputFile */
 		if (exponent > 0)
 		{
-			/* Write \cdot{} if not first factor */
+			/* Write \times{} if not first factor */
 			if (!isFirstFactor)
-				fprintf(outputFile, " \\cdot{}");
+				fprintf(outputFile, " \\times{}");
 			/* Write factor */
 			fprintf(outputFile, " %lu^{%u}",
 					curNode->value,
