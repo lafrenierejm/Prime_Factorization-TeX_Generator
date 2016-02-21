@@ -55,7 +55,8 @@ main(int argc, char *argv[])
 	factorKey(head, key, outputFile);	// Factor the key
 	freeList(head);	// Free the linked list
 
-	/* Close the file */
+	/* Finish and close the file */
+	fprintf(outputFile, "\n");
 	fclose(outputFile);
 
 	/* Exit successfully */
