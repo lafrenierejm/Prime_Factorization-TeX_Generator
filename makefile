@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -Werror -Wpedantic -Wstrict-overflow -fno-strict-aliasing
+CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wstrict-overflow -fno-strict-aliasing
 
 ODIR = obj
 SDIR = src
@@ -11,4 +11,3 @@ $(ODIR)/%.o: $(SDIR)/%.c
 
 factorization: $(ODIR)/factorization.o
 	$(CC) -o $(EDIR)/factorization $(ODIR)/factorization.o
-
