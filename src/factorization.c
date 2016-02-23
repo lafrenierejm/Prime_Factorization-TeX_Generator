@@ -191,17 +191,18 @@ findNextPrime(primeT *head,
 	unsigned long tmp;	// Values to test for primeness
 	primeT *newNode;	// New node to return
 
-	/* Find first test value for curPrime */
+	/* Find first test value for tmp */
 	if (tail->value == 2)
 		tmp = 3;	// If second node in list, then 3
 	else
 		tmp = tail->value + 2;	// Else largest prime + 2
 
-	/* Test tmp for primeness while tmp is not greater than key */
-	while (tmp <= key)
+	/* Test tmp for primeness while tmp^2 is not greater than key */
+	bool isPrime = false;
+	while ((tmp * tmp <= key) && !isPrime)
 	{
 		primeT *position = head;	// Set position to beginning of list
-		bool isPrime = true;	// Assume that tmp is prime
+		isPrime = true;				// Assume that tmp is prime
 
 		/* Test every number in list to see if tmp is really prime */
 		while (isPrime && position->next)
@@ -214,17 +215,22 @@ findNextPrime(primeT *head,
 		if (isPrime && (tmp % position->value == 0))	// Check last value
 			isPrime = false;	// tmp is not prime
 
-		/* If tmp is prime then add node with its value and return */
+		/* If tmp is prime then break loop */
 		if (isPrime)
-		{
-			newNode = makeNode(tmp);	// Create new node with value tmp
-			tail->next = newNode;		// Point tail to newNode
-			break;	// Exit loop
-		}
-
+			isPrime = true;
 		/* Else increase tmp by 2 and test again */
-		tmp += 2;	// Increment tmp by 2
+		else
+			tmp += 2;	// Increment tmp by 2
 	}
+
+	/* Create new node */
+	if (isPrime)	// If loop exited because tmp was prime, then create node with tmp
+		newNode = makeNode(tmp);
+	else	// Else create a node containing key
+		newNode = makeNode(key);
+
+	/* Add newNode to end of list */
+	tail->next = newNode;
 
 	/* Return newNode to caller */
 	return newNode;
