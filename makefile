@@ -22,13 +22,15 @@ directories:
 	$(mkdir) $(EDIR)
 	$(mkdir) $(ODIR)
 
-# Compile to object file
+# Compile the object file
 factorization.o:
 	$(CC) -c $(SDIR)/factorization.c -o $(ODIR)/factorization.o $(CFLAGS)
 
+# Compile the executable
 factorization: $(ODIR)/factorization.o
 	$(CC) -o $(EDIR)/factorization $(ODIR)/factorization.o $(CFLAGS)
 
+# Clean the EDIR and ODIR directories
 clean:
 	$(rm) $(EDIR)/*
 	$(rm) $(ODIR)/*.o
