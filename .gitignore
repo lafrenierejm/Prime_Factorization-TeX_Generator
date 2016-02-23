@@ -1,6 +1,6 @@
-# Ignore directories containing compiled files
-exe/
-obj/
+# Ignore files in directories containing compiled files
+exe/*
+obj/*
 
 # TeX files
 ## Source
