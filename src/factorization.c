@@ -2,24 +2,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-/* Define node for linked list */
-typedef struct prime
-{
-	unsigned long value;	/* node's value */
-	struct prime *next;		/* pointer to next node in list */
-} primeT;
-
 /*
  * Function prototypes
  */
-/* Create new prime */
-primeT * makeNode(unsigned long);
-/* Free list */
-void freeList(primeT *);
 /* Factor the key */
-void factorKey(primeT *, unsigned long, FILE *);
-/* Find the next prime number */
-primeT * findNextPrime(primeT *, primeT *, unsigned long);
+void factorKey(unsigned long, FILE *);
 
 /*
  * main
@@ -56,9 +43,8 @@ main(int argc, char *argv[])
 	fprintf(outputFile, "\\(%lu =",
 			key);
 
-	primeT *head = makeNode(2);	/* Start list of primes at 2 */
-	factorKey(head, key, outputFile);	/* Factor the key */
-	freeList(head);	/* Free the linked list */
+	/* Factor the key */
+	factorKey(key, outputFile);
 
 	// Write the end of the TeX math environment
 	fprintf(outputFile, "\\)");
@@ -72,100 +58,31 @@ main(int argc, char *argv[])
 }
 
 /*
- * makeNode
- * Create new node
- */
-primeT *
-makeNode(unsigned long num)
-{
-	/* malloc a new primeT instance */
-	primeT *newNode = (primeT*)malloc(sizeof(primeT));
-
-	/* Test for successful allocation of newPrime */
-	if (newNode == NULL)
-	{
-		printf("primeT creation failed\n.");
-		return NULL;
-	}
-
-	/* Assign initial values to node */
-	newNode->value = num;	/* Passed value */
-	newNode->next = NULL;	/* Point to NULL */
-
-	/* Return the new primeT */
-	return newNode;
-}
-
-/*
- * freeList
- * Clean up linked list
- */
-void
-freeList(primeT *head)
-{
-	primeT *ptr;
-
-	/* Create primeT pointer at second prime */
-	if (head->next)
-		ptr = head->next;	/* Set ptr to second node if it exists */
-	else
-		ptr = head;		/* Else set ptr to head */
-
-	/* Free memory from head to tail */
-	while (ptr->next)
-	{
-		free(head);		/* Free head */
-		head = ptr;		/* Advance head */
-		ptr = ptr->next;	/* Advance ptr through linked list */
-	}
-	head = ptr;	/* Head is now the tail */
-	free(head);	/* Free final node */
-
-	/* Return void */
-	return;
-}
-
-/*
  * factorKey
  * Find the prime factorization of the given key value
  * Write factors to the output file as they are found
  */
 void
-factorKey(primeT *head,
-		unsigned long key,
-		FILE *outputFile)
+factorKey(unsigned long key, FILE *outputFile)
 {
-	primeT *curNode = head;		/* Set curNode to head */
-	unsigned int exponent = 0;
-	bool isFirstFactor = true;	/* If true then write \times{} to file */
+	unsigned int exponent;
+	bool isFirstFactor = true;		/* If false then write \times{} to file */
+	unsigned long posFactor = 2;	/* Start possible factor at 2 */
 
-	/* Divide by 2 */
-	while ((key % 2 == 0) && (key > 0))
+	/* Factor the key while it
+	 * contains prime factors and
+	 * is greater than or equal to square of factor
+	 * */
+	do
 	{
-		exponent++;	/* Increment exponent with each factor */
-		key = key/2;	/* Divide key by curNode->value */
-	}
-	/* If there were any factors, write them to outputFile */
-	if (exponent > 0)
-	{
-		fprintf(outputFile, " 2^{%u}",
-				exponent
-		       );
-		/* There is now at least one factor */
-		isFirstFactor = false;
-	}
+		/* Reset exponent */
+		exponent = 0;
 
-	/* Continue factoring while key contains prime factors */
-	while (key > 1)
-	{
-		exponent = 0;	/* Reset exponent */
-		curNode = findNextPrime(head, curNode, key);	/* Find next prime */
-
-		/* Divide by the found prime */
-		while ((key % curNode->value == 0) && (key > 0))
+		/* See if posFactor is an actual factor */
+		while ((key % posFactor == 0) && (key > 0))
 		{
-			exponent++;	/* Increment exponent with each factor */
-			key = key/curNode->value;	/* Divide key by current prime */
+			exponent++;			/* Increment exponent with each factor */
+			key /= posFactor;	/* Divide key by current factor */
 		}
 		/* If there were any factors, write them to outputFile */
 		if (exponent > 0)
@@ -175,71 +92,32 @@ factorKey(primeT *head,
 				fprintf(outputFile, " \\times{}");
 			/* Write factor */
 			fprintf(outputFile, " %lu^{%u}",
-					curNode->value,
-					exponent
-			       );
-			/* Have at least one factor */
+					posFactor,
+					exponent);
+			/* Now at least one factor */
 			isFirstFactor = false;
 		}
-	}
 
-	/* Return void */
-	return;
-}
-
-/*
- * nextPrime
- * Find the next prime number givena a list of primes starting at 2
- */
-primeT *
-findNextPrime(primeT *head,
-		primeT *tail,
-		unsigned long key)
-{
-	unsigned long tmp;	/* Values to test for primeness */
-	primeT *newNode;	/* New node to return */
-
-	/* Find first test value for tmp */
-	if (tail->value == 2)
-		tmp = 3;	/* If second node in list, then 3 */
-	else
-		tmp = tail->value + 2;	/* Else largest prime + 2 */
-
-	/* Test tmp for primeness while tmp^2 is not greater than key */
-	bool isPrime = false;
-	while ((tmp * tmp <= key) && !isPrime)
-	{
-		primeT *position = head;	/* Set position to beginning of list */
-		isPrime = true;				/* Assume that tmp is prime */
-
-		/* Test every number in list to see if tmp is really prime */
-		while (isPrime && position->next)
-		{
-			if (tmp % position->value == 0)
-				isPrime = false;	/* tmp is not prime */
-			else
-				position = position->next;	/* Go to next prime */
-		}
-		if (isPrime && (tmp % position->value == 0))	/* Check last value */
-			isPrime = false;	/* tmp is not prime */
-
-		/* If tmp is prime then break loop */
-		if (isPrime)
-			isPrime = true;
-		/* Else increase tmp by 2 and test again */
+		/* Find the next possible factor */
+		if (posFactor == 2)
+			posFactor = 3;	/* If posFactor was previously 2, increase to 3 */
 		else
-			tmp += 2;	/* Increment tmp by 2 */
+			posFactor += 2;	/* Else increase by 2 */
+	} while (key > 1 && (posFactor * posFactor <= key));
+
+	/*
+	 * If the key has not yet been fully factored,
+	 * it must be prime itself
+	 */
+	if (key != 1)
+	{
+		if (!isFirstFactor)
+			fprintf(outputFile, " \\times{}");
+		/* Write factor */
+		fprintf(outputFile, " %lu^{1}",
+				key);
 	}
 
-	/* Create new node */
-	if (isPrime)	/* If loop exited because tmp was prime, then create node with tmp */
-		newNode = makeNode(tmp);
-	else	/* Else create a node containing key */
-		newNode = makeNode(key);
-
-	/* Add newNode to end of list */
-	tail->next = newNode;
-
-	/* Return newNode to caller */
-	return newNode;
+	/* Return void to caller */
+	return;
 }
