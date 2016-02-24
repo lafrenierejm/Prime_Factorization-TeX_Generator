@@ -14,13 +14,13 @@ typedef struct factorNode
  * Function prototypes
  */
 /* Factor the key */
-void factorKey(unsigned long, FILE *);
+void factorKey(unsigned long);
 /* Create a new node */
 factorNodeT * makeNode(unsigned long, unsigned int, factorNodeT *);
 /* Delete a list of nodes */
 void freeList(factorNodeT *);
 /* Print the current list of factors */
-void printFactors(factorNodeT *, unsigned long, FILE *);
+void printFactors(factorNodeT *, unsigned long);
 
 /*
  * main
@@ -29,40 +29,30 @@ void printFactors(factorNodeT *, unsigned long, FILE *);
 int
 main(int argc, char *argv[])
 {
-	/* User should have provided key and filename arguments */
-	if (argc != 3)
+	/* User should have provided key as argument */
+	if (argc != 2)
 	{
-		printf("Usage: %s key filename\n",
+		printf("Usage: %s key\n",
 				argv[0]);
 		exit(1);	/* Exit with code 1 */
-	}
-
-	/* Open file */
-	FILE *outputFile = fopen(argv[2], "w");
-	if (NULL == outputFile)
-	{
-		perror("An error occured while opening the file\n");
-		exit(EXIT_FAILURE);
 	}
 
 	/* Set key value */
 	unsigned long key = strtoul(argv[1], NULL, 10);
 	if (key == 1)
 	{
-		fprintf(outputFile, "\\(1\\) is not a prime number.\n");
 		exit(EXIT_SUCCESS);
 	}
 
-	/* Start the file output */
-	fprintf(outputFile, "\\begin{align*}\n%lu ",
+	/* Start the output */
+	printf("\\begin{align*}\n%lu%%\n",
 			key);
 
 	/* Factor the key */
-	factorKey(key, outputFile);
+	factorKey(key);
 
-	// Finish the file output and close the file
-	fprintf(outputFile, "\\end{align*}\n");
-	fclose(outputFile);
+	/* End the output */
+	printf("\\end{align*}\n");
 
 	/* Exit successfully */
 	exit(EXIT_SUCCESS);
@@ -74,7 +64,7 @@ main(int argc, char *argv[])
  * Write factors to the output file as they are found
  */
 void
-factorKey(unsigned long key, FILE *outputFile)
+factorKey(unsigned long key)
 {
 	unsigned long posFactor;	/* Possible factors */
 	unsigned int exponent;		/* Number of occurrences of factor */
@@ -101,18 +91,12 @@ factorKey(unsigned long key, FILE *outputFile)
 		/* If there were any multiples of the factor, create a node */
 		if (exponent > 0)
 		{
-			printf("Factor = %lu\n", posFactor);
-			printf("Exponent = %u\n", exponent);
 			tail = makeNode(posFactor, exponent, tail);	/* Create the new node */
-			printf("Node created successfully\n");
 			/* Set head to the new node if it was previously empty */
 			if (NULL == head)
-			{
-				printf("Reassigning the head node\n");
 				head = tail;
-			}
 			/* Print the factors */
-			printFactors(head, key, outputFile);
+			printFactors(head, key);
 		}
 
 		/* Find the next possible factor */
@@ -136,11 +120,10 @@ factorKey(unsigned long key, FILE *outputFile)
 			head = tail;
 
 		/* Print the factors */
-		printFactors(head, key, outputFile);
+		printFactors(head, key);
 	}
 
 	/* Free the linked list */
-	printf("Now freeing list\n");
 	freeList(head);
 
 	/* Return void to caller */
@@ -173,7 +156,6 @@ makeNode(unsigned long pr, unsigned int exp, factorNodeT *prevNode)
 		prevNode->next = newNode;
 
 	/* Return newNode to caller */
-	printf("Returning from makeNode\n");
 	return newNode;
 }
 
@@ -202,13 +184,13 @@ freeList(factorNodeT *head)
  * printFactors
  * Print the current list of factors */
 void
-printFactors(factorNodeT *head, unsigned long key, FILE *outputFile)
+printFactors(factorNodeT *head, unsigned long key)
 {
 	factorNodeT *curFactor;		/* Current factor to print */
 	bool isFirstFactor;			/* Whether or not curFactor is first factor */
 
 	/* Print the start of the new line */
-	fprintf(outputFile, "&= ");
+	printf("\t&= ");
 
 	curFactor = head;	/* Start at head */
 	isFirstFactor = true;
@@ -216,10 +198,10 @@ printFactors(factorNodeT *head, unsigned long key, FILE *outputFile)
 	{
 		/* Start by multiplying if not first factor */
 		if (!isFirstFactor)
-			fprintf(outputFile, " \\times{}");
+			printf(" \\times{}");
 
 		/* Print the current factor */
-		fprintf(outputFile, " %lu^{%u}",
+		printf(" %lu^{%u}",
 				curFactor->prime,
 				curFactor->exponent);
 
@@ -235,17 +217,15 @@ printFactors(factorNodeT *head, unsigned long key, FILE *outputFile)
 	{
 		/* Start by multiplying if not first factor */
 		if (!isFirstFactor)
-			fprintf(outputFile, " \\times{}");
+			printf(" \\times{}");
 
 		/* Print the key */
-		fprintf(outputFile, " %lu",
+		printf(" %lu",
 				key);
 	}
 
 	/* End the current line in outputFile */
-	if (key != 1)
-		fprintf(outputFile, "\\\\");
-	fprintf(outputFile, "\n");
+	printf("\\\\\n");
 
 	/* Return void to caller */
 	return;
