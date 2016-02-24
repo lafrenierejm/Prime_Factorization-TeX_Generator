@@ -32,8 +32,7 @@ main(int argc, char *argv[])
 	if (argc != 3)
 	{
 		printf("Usage: %s key filename\n",
-				argv[0]
-		      );
+				argv[0]);
 		exit(1);	/* Exit with code 1 */
 	}
 
@@ -49,13 +48,20 @@ main(int argc, char *argv[])
 	unsigned long key = strtoul(argv[1], NULL, 10);
 	if (key == 1)
 	{
-		printf("1 is not a prime number\n");
+		fprintf(outputFile, "\\(1\\) is not a prime number.\n");
 		exit(EXIT_SUCCESS);
 	}
+
+	/* Start the file output */
+	fprintf(outputFile, "\\(%lu =",
+			key);
 
 	primeT *head = makeNode(2);	/* Start list of primes at 2 */
 	factorKey(head, key, outputFile);	/* Factor the key */
 	freeList(head);	/* Free the linked list */
+
+	// Write the end of the TeX math environment
+	fprintf(outputFile, "\\)");
 
 	/* Finish and close the file */
 	fprintf(outputFile, "\n");
