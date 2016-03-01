@@ -1,6 +1,8 @@
+#include <ctype.h>	/* isprint () */
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdbool.h>	/* boolean data type */
+#include <unistd.h>	/* getopt () */
 
 /* Define node used to store factors */
 typedef struct factorNode
@@ -13,50 +15,89 @@ typedef struct factorNode
 /*
  * Function prototypes
  */
+/* Print the proper use of the program */
+void printUse (char *);
 /* Factor the key */
-void factorKey(unsigned long);
+void factorKey (unsigned long, bool);
 /* Create a new node */
-factorNodeT * makeNode(unsigned long, unsigned int, factorNodeT *);
+factorNodeT * makeNode (unsigned long, unsigned int, factorNodeT *);
 /* Delete a list of nodes */
-void freeList(factorNodeT *);
+void freeList (factorNodeT *);
 /* Print the current list of factors */
-void printFactors(factorNodeT *, unsigned long);
+void printFactors (factorNodeT *, unsigned long, bool);
 
 /*
  * main
  * Main method
  */
 int
-main(int argc, char *argv[])
+main (int argc, char **argv)
 {
-	/* User should have provided key as argument */
-	if (argc != 2)
+	bool flagSteps = false;	/* true if user wants step-by-step */
+
+	/* Get command options */
+	opterr = 0;
+	printf("optind = %i\n", optind);
+	int arg = getopt (argc, argv, "s:");
+	while (arg != -1)
 	{
-		printf("Usage: %s key\n",
-				argv[0]);
-		exit(1);	/* Exit with code 1 */
+		switch (arg)
+		{
+			case 's':
+				flagSteps = true;
+				break;
+			default:
+				fprintf (stderr, "Argument found: %i.\n", optopt);
+				printUse (argv[0]);
+				exit (1);
+		}
+		arg = getopt (argc, argv, "s:");
 	}
 
+	printf("arg = %i; optind = %i\n", argc, optind);
+	/* Process remaining, non-option arguments */
+	if (optind ==1 && optind >= argc)	/* If not exactly one arguments */
+	{
+		printUse (argv[0]);
+		exit (1);
+	}
 	/* Set key value */
-	unsigned long key = strtoul(argv[1], NULL, 10);
+	unsigned long key = strtoul (argv[argc - 1], NULL, 10);
+	fprintf (stdout, "Key = %lu\n", key);
 	if (key == 1)
 	{
-		exit(EXIT_SUCCESS);
+		exit (EXIT_SUCCESS);
 	}
 
 	/* Start the output */
-	printf("\\begin{align*}\n%lu%%\n",
+	fprintf (stdout, "\\begin{align*}\n%lu%%\n",
 			key);
 
 	/* Factor the key */
-	factorKey(key);
+	factorKey (key, flagSteps);
 
 	/* End the output */
-	printf("\\end{align*}\n");
+	fprintf (stdout, "\\end{align*}\n");
 
 	/* Exit successfully */
 	exit(EXIT_SUCCESS);
 }
+
+/*
+ * printUse
+ * Print the proper use of the program
+ */
+void
+printUse (char *exe_path)
+{
+	/* Print usage message */
+	fprintf (stdout, "Usage: %s [-s] KEY\n",
+			exe_path);
+
+	/* Return void to caller */
+	return;
+}
+
 
 /*
  * factorKey
@@ -64,7 +105,7 @@ main(int argc, char *argv[])
  * Write factors to the output file as they are found
  */
 void
-factorKey(unsigned long key)
+factorKey (unsigned long key, bool showSteps)
 {
 	unsigned long posFactor;	/* Possible factors */
 	unsigned int exponent;		/* Number of occurrences of factor */
@@ -96,7 +137,7 @@ factorKey(unsigned long key)
 			if (NULL == head)
 				head = tail;
 			/* Print the factors */
-			printFactors(head, key);
+			printFactors(head, key, showSteps);
 		}
 
 		/* Find the next possible factor */
@@ -120,7 +161,7 @@ factorKey(unsigned long key)
 			head = tail;
 
 		/* Print the factors */
-		printFactors(head, key);
+		printFactors(head, key, showSteps);
 	}
 
 	/* Free the linked list */
@@ -135,7 +176,7 @@ factorKey(unsigned long key)
  * Create a new node
  */
 factorNodeT *
-makeNode(unsigned long pr, unsigned int exp, factorNodeT *prevNode)
+makeNode (unsigned long pr, unsigned int exp, factorNodeT *prevNode)
 {
 	factorNodeT *newNode = (factorNodeT *)malloc(sizeof(factorNodeT));
 
@@ -184,8 +225,12 @@ freeList(factorNodeT *head)
  * printFactors
  * Print the current list of factors */
 void
-printFactors(factorNodeT *head, unsigned long key)
+printFactors (factorNodeT *head, unsigned long key, bool showSteps)
 {
+	/* If not fully factored and not showSteps, return without printing */
+	if ((key != 1) && !showSteps)
+		return;
+
 	factorNodeT *curFactor;		/* Current factor to print */
 	bool isFirstFactor;			/* Whether or not curFactor is first factor */
 
