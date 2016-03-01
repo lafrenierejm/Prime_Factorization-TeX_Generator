@@ -24,11 +24,11 @@ directories:
 
 # Compile the object file
 factorization.o:
-	$(CC) -c $(SDIR)/factorization.c -o $(ODIR)/factorization.o $(CFLAGS)
+	$(CC) $(CFLAGS) -c $(SDIR)/factorization.c -o $(ODIR)/factorization.o
 
 # Compile the executable
 factorization: $(ODIR)/factorization.o
-	$(CC) -o $(EDIR)/factorization $(ODIR)/factorization.o $(CFLAGS)
+	$(CC) $(CFLAGS) -o $(EDIR)/factorization $(ODIR)/factorization.o
 
 # Clean the EDIR and ODIR directories
 clean:
